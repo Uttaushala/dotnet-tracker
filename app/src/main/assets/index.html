@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><script>window.__APP__=true</script>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><script>window.__APP__=true</script><script src="content.js"></script>
 <title>Трекер курса .NET</title>
 <style>
 :root{
@@ -64,8 +64,11 @@ button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,s
 .weeknav .wtitle{flex:1;min-width:0;text-align:center}
 .tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--accent-soft);margin-left:6px;vertical-align:1px}
 .group{font-size:13px;font-weight:600;color:var(--ink2);margin:16px 0 4px;text-transform:none}
-.task{display:flex;align-items:center;gap:12px;width:100%;min-height:54px;padding:8px 2px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
-.task:last-child{border-bottom:0}
+.trow{display:flex;align-items:center;border-bottom:1px solid var(--line)}
+.trow:last-child{border-bottom:0}
+.task{display:flex;align-items:center;gap:12px;flex:1;min-width:0;min-height:54px;padding:8px 2px;border:0;background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.info{flex:none;width:40px;height:40px;border-radius:10px;border:0;background:var(--accent-soft);color:var(--ink);font:600 16px system-ui;cursor:pointer;margin-left:6px}
+.tdesc{background:var(--bg);border-radius:12px;padding:4px 12px 8px;margin:2px 0 10px;font-size:15px}
 .task:disabled{cursor:default}
 .box{flex:none;width:26px;height:26px;border-radius:8px;border:2px solid var(--axis);display:grid;place-items:center;color:var(--onaccent)}
 .box svg{width:16px;height:16px;opacity:0}
@@ -109,6 +112,27 @@ nav.tabs button svg{width:22px;height:22px}
 nav.tabs button[aria-current="page"]{color:var(--ink)}
 nav.tabs button[aria-current="page"]::before{content:"";position:absolute;top:0;left:30%;right:30%;height:3px;border-radius:0 0 3px 3px;background:var(--accent)}
 .empty{color:var(--ink2)}
+.rhead{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.btn.wide{width:100%;margin-top:4px}
+.mat{overflow-wrap:anywhere;line-height:1.55}
+.mat h1.rt{font-size:22px;margin:0 0 12px;line-height:1.25}
+.mat h2{font-size:19px;margin:22px 0 8px}
+.mat h3{font-size:17px;margin:20px 0 6px}
+.mat h4{font-size:15px;margin:16px 0 4px}
+.mat p{margin:8px 0}
+.mat ul,.mat ol{padding-left:22px;margin:8px 0}
+.mat li{margin:4px 0}
+.mat ul.chk{list-style:none;padding-left:0}
+.mat ul.chk li::before{content:"☐ ";color:var(--ink2)}
+.mat code{font:12.5px ui-monospace,Menlo,Consolas,monospace;background:var(--bg);padding:1px 5px;border-radius:5px}
+.mat pre{background:var(--bg);border-radius:10px;padding:12px;overflow-x:auto;margin:10px 0;max-width:100%;-webkit-overflow-scrolling:touch}
+.mat pre code{background:none;padding:0;white-space:pre;overflow-wrap:normal}
+.mat .tw{overflow-x:auto;margin:10px 0}
+.mat table{min-width:100%;font-size:13.5px}
+.mat th,.mat td{vertical-align:top;border-bottom:1px solid var(--line);padding:6px 8px}
+.mat a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.card.mat{padding:16px 16px 20px}
+nav.tabs button{font-size:12px}
 textarea{width:100%;border-radius:12px;border:1px solid var(--axis);background:var(--bg);color:var(--ink);padding:10px 12px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;resize:vertical}
 .btns2{display:flex;gap:8px;margin-top:10px}.btns2 .btn{flex:1}
 @media (min-width:700px){.wrap{padding-top:28px}}
@@ -121,6 +145,7 @@ textarea{width:100%;border-radius:12px;border:1px solid var(--axis);background:v
 </div>
 <nav class="tabs" aria-label="Разделы">
   <button data-tab="week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h9"/></svg>Неделя</button>
+  <button data-tab="lib" id="libtab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M9 8h6"/></svg>Материал</button>
   <button data-tab="all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>Все недели</button>
   <button data-tab="days"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Дни</button>
 </nav>
@@ -129,10 +154,11 @@ textarea{width:100%;border-radius:12px;border:1px solid var(--axis);background:v
 "use strict";
 var WEEKS=[{"n":0,"t":"Окружение и первая программа","tasks":[{"t":"Установить SDK и проверить версию"},{"t":"Консольная программа Playground"},{"t":"Запуск через dotnet run и dotnet watch"},{"t":"Репозиторий на GitHub без bin/ и obj/"},{"t":"Разобрать TargetFramework в .csproj"}]},{"n":1,"t":"Основы C#","tasks":[{"t":"FizzBuzz и выражение switch"},{"t":"Калькулятор"},{"t":"«Угадай число»"},{"t":"Анализ строки и палиндром"},{"t":"Конвертер валют на decimal"},{"t":"Массив оценок без LINQ"},{"t":"Эксперимент: int, string, int[]"},{"t":"«Сломай и объясни»: четыре исключения"}]},{"n":2,"t":"ООП в C#","tasks":[{"t":"Банк: BankAccount и свои исключения"},{"t":"Фигуры: интерфейс IShape"},{"t":"Сотрудники: абстрактный Employee"},{"t":"Value object Money"},{"t":"Мини-проект «Библиотека»"},{"t":"README: интерфейс или абстрактный класс"}]},{"n":3,"t":"Коллекции, generics, LINQ","tasks":[{"t":"Record Sale и 200 продаж"},{"t":"LINQ-запросы по продажам"},{"t":"Свои MyWhere и MySelect"},{"t":"Частотный словарь слов"},{"t":"Generic Stack<T>"},{"t":"Thermostat с событием"},{"t":"Расширить Classify"}]},{"n":4,"t":"Асинхронность, файлы, JSON, HttpClient","tasks":[{"t":"Скачиватель через Task.WhenAll"},{"t":"Клиент API и LINQ"},{"t":"Отмена по Ctrl+C"},{"t":"RetryAsync с растущей паузой"},{"t":"Кэш ответа в файл"},{"t":"Эксперимент: async void"}]},{"n":5,"t":"Тесты, отладка, Git и Проект 1","tasks":[{"t":"Модели, интерфейсы, первые тесты"},{"t":"ExpenseService и зелёные тесты"},{"t":"JSON-репозиторий"},{"t":"Консольное меню с валидацией"},{"t":"Отчёты, экспорт в CSV и бюджет"},{"t":"README проекта"},{"t":"Критерии приёмки Проекта 1"}]},{"n":6,"t":"SQL: запросы","tasks":[{"t":"Схема и данные: 50 клиентов, 30 товаров, 200 заказов"},{"t":"25 запросов в queries.sql"},{"t":"Нарушить целостность и записать ограничения"}]},{"n":7,"t":"SQL: проектирование, индексы, транзакции","tasks":[{"t":"Миллион строк, EXPLAIN ANALYZE и индекс"},{"t":"Перевод денег и потерянное обновление"},{"t":"ER-диаграмма «Библиотека»"},{"t":"Оконные функции: топ-3 по категориям"}]},{"n":8,"t":"Entity Framework Core","tasks":[{"t":"Infrastructure, AppDbContext, миграция"},{"t":"EfExpenseRepository вместо JSON"},{"t":"Логирование SQL"},{"t":"Воспроизвести и исправить N+1"},{"t":"Начальные данные: 8 категорий"},{"t":"Миграция Notes и откат"}]},{"n":9,"t":"HTTP, REST и первое Minimal API","tasks":[{"t":"Разминка: notes и PUT"},{"t":"Файл requests.http"},{"t":"Проект ExpenseTracker.Api"},{"t":"Пять эндпоинтов расходов"},{"t":"Категории и месячный отчёт"},{"t":"Ошибка цикла с Include"},{"t":"OpenAPI и Scalar"},{"t":"Фильтры списка: пять комбинаций"},{"t":"README с таблицей контракта"},{"t":"Ветка feature/api и Pull Request"},{"t":"Проверить CancellationToken","s":1}]},{"n":10,"t":"Внутренности ASP.NET Core: DI, конфигурация, middleware, ошибки, логи","tasks":[{"t":"Время жизни сервисов"},{"t":"Captive dependency"},{"t":"AddInfrastructure"},{"t":"User secrets вместо пароля в файле"},{"t":"BudgetOptions и ValidateOnStart"},{"t":"CorrelationIdMiddleware"},{"t":"GlobalExceptionHandler"},{"t":"Логирование по правилам"},{"t":"NbuRateClient и курсы НБУ"},{"t":"Валюта в месячном отчёте","s":1}]},{"n":11,"t":"Практика API: валидация, формат ошибок, фильтры, пагинация, маппинг, CORS","tasks":[{"t":"Подготовка","h":0.5},{"t":"Валидация атрибутами и карта ошибок","h":2.0},{"t":"Валидация параметров списка","h":1.5},{"t":"FluentValidation на отдельной ветке","h":2.0},{"t":"Решение о валидации: ADR","h":1.0},{"t":"Единый формат ошибок","h":1.5},{"t":"Фильтры эндпоинтов","h":1.0},{"t":"Пагинация, фильтры, сортировка","h":3.0},{"t":"Индекс и эксперимент на 200 000 строк","h":2.0},{"t":"Keyset-эндпоинт","h":2.0,"s":1},{"t":"Маппинг","h":2.0},{"t":"CORS","h":1.5},{"t":"Контроллер для категорий","h":3.0},{"t":"Версии v1 и v2","h":1.5,"s":1},{"t":"README и PR","h":1.0}]},{"n":12,"t":"Проект 2: проектирование API и модель данных","tasks":[{"t":"Дизайн-документ","h":1.5},{"t":"Заглушка пользователя","h":0.5},{"t":"Владелец в схеме: расширение и заполнение","h":1.5},{"t":"Конфигурации и ограничения","h":1.5},{"t":"Владелец в репозиториях, сервисах и эндпоинтах","h":3.0},{"t":"Аудит","h":1.0},{"t":"Корзина","h":2.0},{"t":"Конфликты 409","h":1.0},{"t":"Матрица изоляции","h":1.0},{"t":"Бюджеты","h":2.5},{"t":"Месячный отчёт","h":3.0},{"t":"Нагрузка и индекс","h":1.0},{"t":"Структура эндпоинтов и OpenAPI","h":1.0},{"t":"README и pull request","h":0.5},{"t":"ETag и If-Match","h":2.0,"s":1},{"t":"PATCH","h":1.0,"s":1},{"t":"Атомарный upsert и LeftJoin","h":1.0,"s":1}]},{"n":13,"t":"Аутентификация и авторизация: Identity, JWT, роли, безопасность API","tasks":[{"t":"Контракт и каркас безопасности","h":1.0},{"t":"Identity и таблицы","h":1.5},{"t":"Регистрация","h":2.0},{"t":"Данные и внешние ключи","h":1.5},{"t":"Вход, JWT и API, закрытый по умолчанию","h":4.0},{"t":"Refresh-токены и выход","h":3.0},{"t":"Роли и админ-эндпоинт","h":1.5},{"t":"Лимиты и блокировка","h":1.0},{"t":"Лаборатория атак","h":2.0},{"t":"Тесты","h":2.0},{"t":"README и pull request","h":0.5},{"t":"Reuse detection","h":1.5,"s":1},{"t":"Ответ 429 по контракту","h":1.0,"s":1},{"t":"Перенос данных вместо стирания","h":1.5,"s":1},{"t":"Смена пароля","h":1.5,"s":1}]},{"n":14,"t":"Интеграционные тесты: настоящая БД, настоящий HTTP","tasks":[{"t":"Каркас","h":2.0},{"t":"Помощники и первый сценарий","h":1.5},{"t":"Матрица изоляции в коде","h":2.5},{"t":"Контракт ошибок","h":1.5},{"t":"Конкуренция","h":2.5},{"t":"Время и аудит","h":1.0},{"t":"Снимок OpenAPI","h":1.5},{"t":"Миграции","h":1.0},{"t":"Покрытие","h":1.0},{"t":"Ломаем код","h":1.0},{"t":"Закрытие проекта 2","h":2.0},{"t":"Respawn","h":1.0,"s":1},{"t":"Стабильность","h":1.0,"s":1}]},{"n":15,"t":"Docker: образ, compose и работа за прокси","tasks":[{"t":"Образ","h":2.0},{"t":"Режим миграций","h":1.0},{"t":"Compose","h":3.0},{"t":"Настоящий IP клиента","h":2.0},{"t":"Здоровье и перезапуск","h":1.5},{"t":"Логи без секретов","h":1.0},{"t":"Образ глазами безопасности","h":1.0},{"t":"README и pull request","h":1.0},{"t":"Сборка под другую архитектуру","h":1.0,"s":1},{"t":"Проверка здоровья в прокси","h":1.0,"s":1}]},{"n":16,"t":"CI/CD и деплой: GitHub Actions, GHCR, сервер с HTTPS","tasks":[{"t":"CI на pull request","h":2.0},{"t":"Защита ветки и шаблон PR","h":0.5},{"t":"Публикация образа","h":1.5},{"t":"Сервер","h":3.0},{"t":"Боевой compose и HTTPS","h":2.5},{"t":"Администратор в продакшене","h":1.0},{"t":"Деплой из конвейера","h":3.0},{"t":"Резервные копии","h":1.5},{"t":"Учебный откат","h":1.0},{"t":"README и бейдж","h":0.5},{"t":"Автоматический откат","h":1.5,"s":1},{"t":"Dependabot","h":0.5,"s":1}]},{"n":17,"t":"Фоновая работа, кэш и очереди: BackgroundService, Redis, RabbitMQ","tasks":[{"t":"Кэш отчёта","h":3.0},{"t":"Холодный ключ","h":1.0},{"t":"Фоновая чистка","h":3.0},{"t":"Блокировка одного исполнителя","h":1.5},{"t":"Outbox","h":3.5},{"t":"RabbitMQ: публикация и потребление","h":3.0},{"t":"Учения по отказам","h":1.5},{"t":"Боевая конфигурация","h":1.0},{"t":"README и pull request","h":0.5},{"t":"Отложенный повтор","h":2.0,"s":1},{"t":"Два экземпляра","h":1.5,"s":1}]},{"n":18,"t":"Надёжность и наблюдаемость: повторы, таймауты, трассировка","tasks":[{"t":"Стратегия выполнения","h":2.0},{"t":"Идемпотентность создания расхода","h":2.0},{"t":"Внешний вызов под защитой","h":2.5},{"t":"Единый формат ошибок","h":1.0},{"t":"Чистые логи","h":1.5},{"t":"OpenTelemetry","h":2.5},{"t":"Свои метрики","h":2.0},{"t":"Три поломки","h":2.0},{"t":"Боевая конфигурация и PR","h":1.0},{"t":"Трасса через очередь","h":2.0,"s":1},{"t":"Выключатель для Redis","h":1.5,"s":1}]},{"n":19,"t":"Проектирование: SOLID, паттерны, ошибки как значения","tasks":[{"t":"Аудит дизайна","h":2.0},{"t":"Разрезать большой класс","h":4.0},{"t":"Правила через Strategy","h":2.5},{"t":"Декоратор кэша","h":2.0},{"t":"Result для бизнес-исходов","h":2.5},{"t":"Дисциплина кода","h":1.5},{"t":"Три ADR","h":1.0},{"t":"PR и тег","h":0.5},{"t":"Specification для фильтров","h":2.0,"s":1},{"t":"Мутационное тестирование","h":2.0,"s":1}]},{"n":20,"t":"Архитектура: слои, границы, вертикальные срезы","tasks":[{"t":"Решение и схема","h":1.5},{"t":"Проект Domain","h":4.0},{"t":"Money","h":3.0},{"t":"Правила в сущностях","h":3.0},{"t":"Раскладка по фичам","h":3.0},{"t":"Архитектурные тесты","h":1.5},{"t":"Аудит зависимостей","h":1.5},{"t":"PR и тег","h":0.5},{"t":"Mapperly","h":1.5,"s":1},{"t":"Модуль уведомлений","h":3.0,"s":1}]},{"n":21,"t":"TeamBoard: требования, модель данных, изоляция, ходячий скелет","tasks":[{"t":"Репозиторий и каркас","h":3.0},{"t":"Задачи в GitHub","h":1.5},{"t":"Модель данных","h":3.0},{"t":"Контракт API","h":2.5},{"t":"Срез «аккаунты и пространства»","h":4.0},{"t":"Авторизация","h":3.0},{"t":"Деплой скелета","h":1.5},{"t":"Схема архитектуры","h":1.0,"s":1},{"t":"Нагрузочный тест скелета","h":1.5,"s":1}]},{"n":22,"t":"TeamBoard: ядро — доски, карточки, порядок, конфликты, лента","tasks":[{"t":"Приглашения","h":3.0},{"t":"Доски и колонки","h":2.5},{"t":"Карточки","h":3.0},{"t":"Перенос и порядок","h":3.5},{"t":"Конфликты версий","h":2.0},{"t":"Комментарии","h":1.5},{"t":"Лента активности","h":2.5},{"t":"События в Outbox","h":1.5},{"t":"PR и тег","h":0.5},{"t":"Доменные события","h":2.0,"s":1},{"t":"Мягкое удаление карточек","h":2.0,"s":1}]},{"n":23,"t":"TeamBoard: реальное время, файлы, поиск, письма","tasks":[{"t":"SignalR","h":4.0},{"t":"Backplane","h":1.5},{"t":"Отзыв доступа","h":1.5},{"t":"Вложения","h":4.5},{"t":"Поиск","h":3.0},{"t":"Письма","h":2.5},{"t":"Боевая конфигурация","h":1.0},{"t":"PR и тег","h":0.5},{"t":"Присутствие","h":2.0,"s":1},{"t":"Подсветка результатов","h":1.5,"s":1},{"t":"ETag для доски","h":1.5,"s":1}]},{"n":24,"t":"TeamBoard: качество, безопасность, демо, v1.0.0","tasks":[{"t":"Нагрузочный тест","h":3.0},{"t":"Узкое место","h":1.5},{"t":"Проверка по OWASP","h":4.0},{"t":"Исправления","h":3.0},{"t":"README и ADR","h":3.0},{"t":"Демо-данные","h":2.0},{"t":"Живой деплой","h":2.0},{"t":"Релиз","h":1.0},{"t":"Минимальный фронтенд","h":8.0,"s":1},{"t":"Сбои зависимостей","h":2.0,"s":1},{"t":"Автоматический аудит","h":1.5,"s":1}]},{"n":25,"t":"Рынок, резюме и профили","tasks":[{"t":"Резюме на двух языках","h":4.0},{"t":"GitHub","h":3.0},{"t":"Профили","h":2.5},{"t":"Рассказ о себе","h":1.5},{"t":"Истории о проектах","h":3.0},{"t":"Список целей","h":2.0},{"t":"Таблица откликов","h":1.0},{"t":"Страница-портфолио","h":4.0,"s":1},{"t":"Разбор резюме","h":1.0,"s":1}]},{"n":26,"t":"Отклики и тестовые задания","tasks":[{"t":"Серия откликов","h":6.0},{"t":"Три шаблона","h":2.0},{"t":"Холодное сообщение","h":1.5},{"t":"Тренировочное тестовое","h":5.0},{"t":"Профили","h":1.0},{"t":"Вклад в open source","h":4.0,"s":1},{"t":"Пост о проекте","h":2.0,"s":1}]},{"n":27,"t":"Собеседования","tasks":[{"t":"Пробное собеседование","h":3.0},{"t":"Двадцать ключевых вопросов","h":5.0},{"t":"Пять историй","h":3.0},{"t":"Живое кодирование","h":4.0},{"t":"Вопросы работодателю","h":1.0},{"t":"Английское собеседование","h":1.5},{"t":"Собеседование с другом","h":2.0,"s":1},{"t":"Разбор реального собеседования","h":1.0,"s":1}]},{"n":28,"t":"Итерации, предложения и что дальше","tasks":[{"t":"Разбор воронки","h":2.0},{"t":"Письмо с запросом обратной связи","h":1.0},{"t":"Таблица сравнения предложений","h":2.0},{"t":"Сценарий разговора о зарплате","h":1.5},{"t":"План на три месяца","h":2.5},{"t":"Ретроспектива курса","h":2.0},{"t":"Продолжение поиска","h":4.0},{"t":"Улучшение проекта","h":6.0,"s":1},{"t":"Выступление","h":3.0,"s":1}]}];
 var LAST=WEEKS.length-1;
-var FIX=[["g","Критерии «Готово, если» выполнены"],["q","Вопросы самопроверки разобраны"],["r","Результат отправлен на ревью"]];
+var MAT=window.MATERIAL||null;
+var FIX=[["m","Материал недели прочитан"],["g","Критерии «Готово, если» выполнены"],["q","Вопросы самопроверки разобраны"],["r","Результат отправлен на ревью"]];
 var CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 
-var state={tab:"week",week:null,pick:null,done:{},days:{},settings:{start:"",goal:3.5},ready:false,mode:"loading",readOnly:false,status:"",err:"",bk:""};
+var state={tab:"week",week:null,pick:null,done:{},days:{},settings:{start:"",goal:3.5},ready:false,mode:"loading",readOnly:false,status:"",err:"",bk:"",open:{},reader:null};
 var db=null;
 var queue=new Map();
 var timers={};
@@ -222,14 +248,14 @@ function localLoad(){
 }
 function cleanDone(o){
   var r={};
-  Object.keys(o||{}).forEach(function(k){if(/^(t\d{1,2}|g|q|r)$/.test(k)&&o[k])r[k]=1});
+  Object.keys(o||{}).forEach(function(k){if(/^(t\d{1,2}|g|q|r|m)$/.test(k)&&o[k])r[k]=1});
   return r;
 }
 
 /* ---------- действия ---------- */
-function toggle(key){
+function toggle(key,n){
   if(!state.ready||state.readOnly)return;
-  var w=WEEKS[state.week],id=wid(w.n),cur=Object.assign({},state.done[id]||{});
+  var w=WEEKS[n==null?state.week:n],id=wid(w.n),cur=Object.assign({},state.done[id]||{});
   if(cur[key])delete cur[key];else cur[key]=1;
   state.done[id]=cur;render();
   persist("weeks/"+id,{done:cur,updatedAt:new Date().toISOString()});
@@ -293,32 +319,60 @@ function todayCard(){
     +'<button class="btn primary" data-act="h" data-d="1"'+dis+' aria-label="Плюс час">+1 ч</button></div>'
     +'</section>';
 }
-function taskRow(key,title,hrs,isStar,on){
-  return '<button class="task" role="checkbox" aria-checked="'+(on?'true':'false')+'" data-act="toggle" data-k="'+key+'"'+(state.readOnly?' disabled':'')+'>'
+function taskRow(key,title,hrs,isStar,on,desc,okey){
+  var op=!!(desc&&state.open[okey]);
+  var h='<div class="trow"><button class="task" role="checkbox" aria-checked="'+(on?'true':'false')+'" data-act="toggle" data-k="'+key+'"'+(state.readOnly?' disabled':'')+'>'
     +'<span class="box">'+CHECK+'</span>'
     +'<span class="tt">'+(isStar?'<span class="star" aria-label="необязательное">★ </span>':'')+esc(title)+'</span>'
     +(hrs!=null?'<span class="hrs">'+fmt(hrs)+' ч</span>':'')
-    +'</button>';
+    +'</button>'
+    +(desc?'<button class="info" data-act="info" data-k="'+okey+'" aria-expanded="'+op+'" aria-label="'+(op?'Скрыть':'Показать')+' описание задания">'+(op?'−':'i')+'</button>':'')
+    +'</div>';
+  if(op)h+='<div class="tdesc mat">'+desc+'</div>';
+  return h;
 }
+function td(n,i){return MAT&&MAT.weeks[n]?MAT.weeks[n].t[i]||null:null}
 function weekView(){
   var w=WEEKS[state.week],s=weekStats(w),d=state.done[wid(w.n)]||{},cur=currentWeek();
   var h=topCard()+todayCard();
   h+='<div class="weeknav"><button class="icon" data-act="prev" aria-label="Предыдущая неделя"'+(state.week===0?' disabled':'')+'>‹</button>'
     +'<div class="wtitle"><div class="kicker">Неделя '+w.n+' из '+LAST+(w.n===cur?'<span class="tag">сейчас</span>':'')+'</div><h2>'+esc(w.t)+'</h2></div>'
     +'<button class="icon" data-act="next" aria-label="Следующая неделя"'+(state.week===LAST?' disabled':'')+'>›</button></div>';
+  if(MAT)h+='<button class="btn primary wide" data-act="read" data-n="'+w.n+'" style="margin:0 0 12px">Читать материал недели</button>';
   h+='<section class="card">';
   h+='<div class="row" style="margin-bottom:8px"><div class="grow kicker">Основные: '+s.rd+' из '+s.req+(s.hk&&s.ht?' · '+fmt(s.hd)+' из '+fmt(s.ht)+' ч':'')+'</div></div>'+bar(s.req?100*s.rd/s.req:0,true);
   h+='<div style="margin-top:8px">';
-  w.tasks.forEach(function(t,i){if(!t.s)h+=taskRow("t"+(i+1),t.t,t.h,false,!!d["t"+(i+1)])});
+  w.tasks.forEach(function(t,i){if(!t.s)h+=taskRow("t"+(i+1),t.t,t.h,false,!!d["t"+(i+1)],td(w.n,i),w.n+":"+i)});
   h+='</div>';
   if(s.op){
     h+='<div class="group">Необязательные (★) · '+s.od+' из '+s.op+'</div>';
-    w.tasks.forEach(function(t,i){if(t.s)h+=taskRow("t"+(i+1),t.t,t.h,true,!!d["t"+(i+1)])});
+    w.tasks.forEach(function(t,i){if(t.s)h+=taskRow("t"+(i+1),t.t,t.h,true,!!d["t"+(i+1)],td(w.n,i),w.n+":"+i)});
   }
   h+='<div class="group">Завершение недели</div>';
-  FIX.forEach(function(f){h+=taskRow(f[0],f[1],null,false,!!d[f[0]])});
+  FIX.forEach(function(f){if(f[0]==="m"&&!MAT)return;h+=taskRow(f[0],f[1],null,false,!!d[f[0]])});
   if(s.closed)h+='<div class="closed">Неделя закрыта. Можно переходить к следующей.</div>';
   h+='</section>';
+  return h;
+}
+function libView(){
+  var h='<section class="card"><h2 style="margin-bottom:6px">Справочные разделы</h2>';
+  var order=["intro","track","qa","ready","res"];
+  order.forEach(function(id){var p=MAT.pages[id];if(p)h+='<button class="wrow" data-act="page" data-id="'+id+'"><span class="wmain"><span class="wt" style="margin:0;white-space:normal">'+esc(p.title)+'</span></span><span class="wc">›</span></button>'});
+  h+='</section><section class="card"><h2 style="margin-bottom:6px">Материалы по неделям</h2>';
+  WEEKS.forEach(function(w){h+='<button class="wrow" data-act="read" data-n="'+w.n+'"><span class="num">'+w.n+'</span><span class="wmain"><span class="wt" style="margin:0;white-space:normal">'+esc(w.t)+'</span></span><span class="wc">›</span></button>'});
+  return h+'</section>';
+}
+function readerView(){
+  var r=state.reader,title,body,isW=r.k==="w";
+  if(isW){title="Неделя "+r.n+". "+WEEKS[r.n].t;body=MAT.weeks[r.n].h}
+  else{title=MAT.pages[r.id].title;body=MAT.pages[r.id].h}
+  var h='<div class="rhead"><button class="btn" data-act="rback">‹ Назад</button><span class="grow"></span>'
+    +(isW?'<button class="icon" data-act="rprev" aria-label="Предыдущая неделя"'+(r.n===0?' disabled':'')+'>‹</button><button class="icon" data-act="rnext" aria-label="Следующая неделя"'+(r.n===LAST?' disabled':'')+'>›</button>':'')
+    +'</div><article class="card mat"><h1 class="rt">'+esc(title)+'</h1>'+body+'</article>';
+  if(isW){
+    var on=!!((state.done[wid(r.n)]||{}).m);
+    h+='<button class="btn '+(on?'':'primary ')+'wide" data-act="rdone"'+(state.readOnly?' disabled':'')+'>'+(on?'Материал отмечен прочитанным':'Отметить материал прочитанным')+'</button>';
+  }
   return h;
 }
 function allView(){
@@ -388,7 +442,8 @@ function renderBanner(){
 function render(){
   var y=window.scrollY,v=$("#view");
   if(!state.ready)v.innerHTML='<div class="card empty">'+(state.mode==="stuck"?'Прогресс не загрузился.':'Загружаю прогресс…')+'</div>';
-  else v.innerHTML=state.tab==="week"?weekView():state.tab==="all"?allView():daysView();
+  else if(state.reader&&MAT)v.innerHTML=readerView();
+  else v.innerHTML=state.tab==="week"?weekView():state.tab==="lib"&&MAT?libView():state.tab==="all"?allView():daysView();
   document.querySelectorAll("nav.tabs button").forEach(function(b){if(b.dataset.tab===state.tab)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
   renderBanner();
   window.scrollTo(0,y);
@@ -397,7 +452,7 @@ function render(){
 /* ---------- события ---------- */
 document.addEventListener("click",function(e){
   var t=e.target.closest("[data-act],[data-tab]");if(!t)return;
-  if(t.dataset.tab){state.tab=t.dataset.tab;render();window.scrollTo(0,0);return}
+  if(t.dataset.tab){state.tab=t.dataset.tab;state.reader=null;render();window.scrollTo(0,0);return}
   var a=t.dataset.act;
   if(a==="toggle")toggle(t.dataset.k);
   else if(a==="prev"){if(state.week>0){state.week--;render()}}
@@ -406,6 +461,13 @@ document.addEventListener("click",function(e){
   else if(a==="h")adjustToday(parseFloat(t.dataset.d));
   else if(a==="goal")setGoal(parseFloat(t.dataset.d));
   else if(a==="pick"){state.pick=+t.dataset.i;render()}
+  else if(a==="info"){state.open[t.dataset.k]=!state.open[t.dataset.k];render()}
+  else if(a==="read"){state.reader={k:"w",n:+t.dataset.n};render();window.scrollTo(0,0)}
+  else if(a==="page"){state.reader={k:"p",id:t.dataset.id};render();window.scrollTo(0,0)}
+  else if(a==="rback"){state.reader=null;render();window.scrollTo(0,0)}
+  else if(a==="rprev"){if(state.reader.n>0){state.reader={k:"w",n:state.reader.n-1};render();window.scrollTo(0,0)}}
+  else if(a==="rnext"){if(state.reader.n<LAST){state.reader={k:"w",n:state.reader.n+1};render();window.scrollTo(0,0)}}
+  else if(a==="rdone")toggle("m",state.reader.n);
   else if(a==="export")doExport();
   else if(a==="import")doImport();
 });
@@ -441,6 +503,13 @@ function doImport(){
   state.settings.goal=(typeof st.goal==="number"&&st.goal>=1&&st.goal<=8)?st.goal:3.5;
   localSave();state.bk="";render();bkMsg("Готово, прогресс восстановлен.");
 }
+
+window.__back=function(){
+  if(state.reader){state.reader=null;render();return true}
+  if(state.tab!=="week"){state.tab="week";render();return true}
+  return false;
+};
+if(!MAT){var lt=document.getElementById("libtab");if(lt)lt.remove()}
 
 /* ---------- запуск ---------- */
 function becomeReady(){

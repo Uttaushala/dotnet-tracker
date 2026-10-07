@@ -53,6 +53,15 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    public void onBackPressed() {
+        web.evaluateJavascript("String(window.__back && window.__back())", value -> {
+            if (!"\"true\"".equals(value)) {
+                MainActivity.super.onBackPressed();
+            }
+        });
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         web.onPause();
