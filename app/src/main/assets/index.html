@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><script>window.__APP__=true</script>
+<title>Трекер курса .NET</title>
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#898781;
+  --line:#e1e0d9;--axis:#c3c2b7;--accent:#2a78d6;--accent-soft:rgba(42,120,214,.12);
+  --track:#cde2fb;--ring:rgba(11,11,11,.10);--onaccent:#ffffff;
+  --warn-bg:#fff4d6;--warn-ink:#5a4200;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0d0d0d;--surface:#1a1a19;--ink:#ffffff;--ink2:#c3c2b7;--muted:#898781;
+    --line:#2c2c2a;--axis:#383835;--accent:#3987e5;--accent-soft:rgba(57,135,229,.20);
+    --track:#0d366b;--ring:rgba(255,255,255,.10);--onaccent:#0b0b0b;
+    --warn-bg:#3a2e08;--warn-ink:#f3d98a;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0d0d0d;--surface:#1a1a19;--ink:#ffffff;--ink2:#c3c2b7;--muted:#898781;
+  --line:#2c2c2a;--axis:#383835;--accent:#3987e5;--accent-soft:rgba(57,135,229,.20);
+  --track:#0d366b;--ring:rgba(255,255,255,.10);--onaccent:#0b0b0b;
+  --warn-bg:#3a2e08;--warn-ink:#f3d98a;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-tap-highlight-color:transparent;padding-bottom:92px}
+.wrap{max-width:560px;margin:0 auto;padding:16px}
+header.top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+header.top h1{font-size:20px;margin:0;font-weight:650;flex:1}
+#status{font-size:13px;color:var(--ink2)}
+a.ext{font-size:14px;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.card{background:var(--surface);border-radius:16px;box-shadow:0 0 0 1px var(--ring);padding:16px;margin-bottom:12px}
+.note{background:var(--warn-bg);color:var(--warn-ink);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:14px}
+.hero{display:flex;align-items:baseline;gap:4px;line-height:1}
+.hero .big{font-size:56px;font-weight:650;letter-spacing:-.02em}
+.hero .pct{font-size:24px;font-weight:600;color:var(--ink2)}
+.sub{color:var(--ink2);font-size:14px;margin:6px 0 12px}
+.bar{height:10px;border-radius:5px;background:var(--track);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:5px;min-width:0;transition:width .25s}
+.bar.mini{height:6px;border-radius:3px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.stat{background:var(--bg);border-radius:12px;padding:10px 12px}
+.stat b{display:block;font-size:20px;font-weight:650}
+.stat span{font-size:12px;color:var(--ink2)}
+.plan{font-size:14px;color:var(--ink2);margin-top:12px}
+h2{font-size:18px;margin:0;font-weight:650}
+.kicker{font-size:13px;color:var(--ink2)}
+.row{display:flex;align-items:center;gap:12px}
+.grow{flex:1;min-width:0}
+.btn{min-height:44px;padding:0 16px;border-radius:12px;border:0;background:var(--accent-soft);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--onaccent)}
+.btn:disabled,.icon:disabled{opacity:.4;cursor:default}
+.icon{width:44px;height:44px;border-radius:12px;border:0;background:var(--accent-soft);color:var(--ink);font-size:22px;cursor:pointer;flex:none}
+button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.today .val{font-size:28px;font-weight:650}
+.today .goal{color:var(--ink2);font-size:14px}
+.today .btns{display:flex;gap:8px;margin-top:12px}
+.today .btns .btn{flex:1}
+.weeknav{display:flex;align-items:center;gap:8px;margin:20px 0 12px}
+.weeknav .wtitle{flex:1;min-width:0;text-align:center}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--accent-soft);margin-left:6px;vertical-align:1px}
+.group{font-size:13px;font-weight:600;color:var(--ink2);margin:16px 0 4px;text-transform:none}
+.task{display:flex;align-items:center;gap:12px;width:100%;min-height:54px;padding:8px 2px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.task:last-child{border-bottom:0}
+.task:disabled{cursor:default}
+.box{flex:none;width:26px;height:26px;border-radius:8px;border:2px solid var(--axis);display:grid;place-items:center;color:var(--onaccent)}
+.box svg{width:16px;height:16px;opacity:0}
+.task[aria-checked="true"] .box{background:var(--accent);border-color:var(--accent)}
+.task[aria-checked="true"] .box svg{opacity:1}
+.task[aria-checked="true"] .tt{color:var(--ink2);text-decoration:line-through;text-decoration-thickness:1px}
+.tt{flex:1;min-width:0}
+.hrs{flex:none;font-size:13px;color:var(--ink2)}
+.star{font-weight:700}
+.closed{background:var(--accent-soft);border-radius:12px;padding:12px 14px;margin-top:12px;font-weight:600}
+.wrow{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:10px 12px;border:0;border-radius:12px;background:var(--surface);box-shadow:0 0 0 1px var(--ring);color:var(--ink);font:inherit;text-align:left;cursor:pointer;margin-bottom:8px}
+.wrow.cur{box-shadow:0 0 0 2px var(--accent)}
+.wrow .num{flex:none;width:32px;height:32px;border-radius:10px;background:var(--bg);display:grid;place-items:center;font-weight:650;font-size:14px}
+.wrow .wmain{flex:1;min-width:0;display:block}
+.wrow .wt{display:block;font-size:15px;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wrow .wc{flex:none;font-size:13px;color:var(--ink2)}
+.wrow .wc svg{width:20px;height:20px;color:var(--accent)}
+svg.chart{width:100%;height:auto;display:block}
+.chart text{font:11px system-ui,sans-serif;fill:var(--ink2)}
+.chart .tick.sel{font-weight:700;fill:var(--ink)}
+.chart .gl{stroke:var(--axis);stroke-width:1}
+.chart .bs{stroke:var(--axis);stroke-width:1}
+.chart .gt{paint-order:stroke;stroke:var(--surface);stroke-width:3px}
+.chart .bar-m{fill:var(--accent)}
+.chart .selbg{fill:var(--accent-soft)}
+.chart .hit{fill:transparent;cursor:pointer}
+.readout{font-size:15px;margin-top:6px;min-height:24px}
+details{margin-top:10px}
+summary{cursor:pointer;color:var(--ink2);font-size:14px;min-height:36px;display:flex;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+label.f{display:block;font-size:14px;color:var(--ink2);margin-bottom:6px}
+input[type=date]{min-height:44px;border-radius:12px;border:1px solid var(--axis);background:var(--bg);color:var(--ink);padding:0 12px;font:inherit;width:100%}
+.setrow{margin-top:14px}
+.stepper{display:flex;align-items:center;gap:12px}
+.stepper b{min-width:64px;text-align:center;font-size:18px}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav.tabs button{flex:1;min-height:60px;border:0;background:none;color:var(--ink2);font:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button[aria-current="page"]{color:var(--ink)}
+nav.tabs button[aria-current="page"]::before{content:"";position:absolute;top:0;left:30%;right:30%;height:3px;border-radius:0 0 3px 3px;background:var(--accent)}
+.empty{color:var(--ink2)}
+textarea{width:100%;border-radius:12px;border:1px solid var(--axis);background:var(--bg);color:var(--ink);padding:10px 12px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;resize:vertical}
+.btns2{display:flex;gap:8px;margin-top:10px}.btns2 .btn{flex:1}
+@media (min-width:700px){.wrap{padding-top:28px}}
+</style>
+</head><body>
+<div class="wrap">
+  <header class="top"><h1>Курс .NET</h1><span id="status" role="status" aria-live="polite"></span><a class="ext" href="https://claude.ai/artifact/N2dnfxywRgCPD453Aa7MLj" target="_blank" rel="noopener">Курс ↗</a></header>
+  <div id="banner"></div>
+  <main id="view"></main>
+</div>
+<nav class="tabs" aria-label="Разделы">
+  <button data-tab="week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h9"/></svg>Неделя</button>
+  <button data-tab="all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>Все недели</button>
+  <button data-tab="days"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Дни</button>
+</nav>
+<script>
+(function(){
+"use strict";
+var WEEKS=[{"n":0,"t":"Окружение и первая программа","tasks":[{"t":"Установить SDK и проверить версию"},{"t":"Консольная программа Playground"},{"t":"Запуск через dotnet run и dotnet watch"},{"t":"Репозиторий на GitHub без bin/ и obj/"},{"t":"Разобрать TargetFramework в .csproj"}]},{"n":1,"t":"Основы C#","tasks":[{"t":"FizzBuzz и выражение switch"},{"t":"Калькулятор"},{"t":"«Угадай число»"},{"t":"Анализ строки и палиндром"},{"t":"Конвертер валют на decimal"},{"t":"Массив оценок без LINQ"},{"t":"Эксперимент: int, string, int[]"},{"t":"«Сломай и объясни»: четыре исключения"}]},{"n":2,"t":"ООП в C#","tasks":[{"t":"Банк: BankAccount и свои исключения"},{"t":"Фигуры: интерфейс IShape"},{"t":"Сотрудники: абстрактный Employee"},{"t":"Value object Money"},{"t":"Мини-проект «Библиотека»"},{"t":"README: интерфейс или абстрактный класс"}]},{"n":3,"t":"Коллекции, generics, LINQ","tasks":[{"t":"Record Sale и 200 продаж"},{"t":"LINQ-запросы по продажам"},{"t":"Свои MyWhere и MySelect"},{"t":"Частотный словарь слов"},{"t":"Generic Stack<T>"},{"t":"Thermostat с событием"},{"t":"Расширить Classify"}]},{"n":4,"t":"Асинхронность, файлы, JSON, HttpClient","tasks":[{"t":"Скачиватель через Task.WhenAll"},{"t":"Клиент API и LINQ"},{"t":"Отмена по Ctrl+C"},{"t":"RetryAsync с растущей паузой"},{"t":"Кэш ответа в файл"},{"t":"Эксперимент: async void"}]},{"n":5,"t":"Тесты, отладка, Git и Проект 1","tasks":[{"t":"Модели, интерфейсы, первые тесты"},{"t":"ExpenseService и зелёные тесты"},{"t":"JSON-репозиторий"},{"t":"Консольное меню с валидацией"},{"t":"Отчёты, экспорт в CSV и бюджет"},{"t":"README проекта"},{"t":"Критерии приёмки Проекта 1"}]},{"n":6,"t":"SQL: запросы","tasks":[{"t":"Схема и данные: 50 клиентов, 30 товаров, 200 заказов"},{"t":"25 запросов в queries.sql"},{"t":"Нарушить целостность и записать ограничения"}]},{"n":7,"t":"SQL: проектирование, индексы, транзакции","tasks":[{"t":"Миллион строк, EXPLAIN ANALYZE и индекс"},{"t":"Перевод денег и потерянное обновление"},{"t":"ER-диаграмма «Библиотека»"},{"t":"Оконные функции: топ-3 по категориям"}]},{"n":8,"t":"Entity Framework Core","tasks":[{"t":"Infrastructure, AppDbContext, миграция"},{"t":"EfExpenseRepository вместо JSON"},{"t":"Логирование SQL"},{"t":"Воспроизвести и исправить N+1"},{"t":"Начальные данные: 8 категорий"},{"t":"Миграция Notes и откат"}]},{"n":9,"t":"HTTP, REST и первое Minimal API","tasks":[{"t":"Разминка: notes и PUT"},{"t":"Файл requests.http"},{"t":"Проект ExpenseTracker.Api"},{"t":"Пять эндпоинтов расходов"},{"t":"Категории и месячный отчёт"},{"t":"Ошибка цикла с Include"},{"t":"OpenAPI и Scalar"},{"t":"Фильтры списка: пять комбинаций"},{"t":"README с таблицей контракта"},{"t":"Ветка feature/api и Pull Request"},{"t":"Проверить CancellationToken","s":1}]},{"n":10,"t":"Внутренности ASP.NET Core: DI, конфигурация, middleware, ошибки, логи","tasks":[{"t":"Время жизни сервисов"},{"t":"Captive dependency"},{"t":"AddInfrastructure"},{"t":"User secrets вместо пароля в файле"},{"t":"BudgetOptions и ValidateOnStart"},{"t":"CorrelationIdMiddleware"},{"t":"GlobalExceptionHandler"},{"t":"Логирование по правилам"},{"t":"NbuRateClient и курсы НБУ"},{"t":"Валюта в месячном отчёте","s":1}]},{"n":11,"t":"Практика API: валидация, формат ошибок, фильтры, пагинация, маппинг, CORS","tasks":[{"t":"Подготовка","h":0.5},{"t":"Валидация атрибутами и карта ошибок","h":2.0},{"t":"Валидация параметров списка","h":1.5},{"t":"FluentValidation на отдельной ветке","h":2.0},{"t":"Решение о валидации: ADR","h":1.0},{"t":"Единый формат ошибок","h":1.5},{"t":"Фильтры эндпоинтов","h":1.0},{"t":"Пагинация, фильтры, сортировка","h":3.0},{"t":"Индекс и эксперимент на 200 000 строк","h":2.0},{"t":"Keyset-эндпоинт","h":2.0,"s":1},{"t":"Маппинг","h":2.0},{"t":"CORS","h":1.5},{"t":"Контроллер для категорий","h":3.0},{"t":"Версии v1 и v2","h":1.5,"s":1},{"t":"README и PR","h":1.0}]},{"n":12,"t":"Проект 2: проектирование API и модель данных","tasks":[{"t":"Дизайн-документ","h":1.5},{"t":"Заглушка пользователя","h":0.5},{"t":"Владелец в схеме: расширение и заполнение","h":1.5},{"t":"Конфигурации и ограничения","h":1.5},{"t":"Владелец в репозиториях, сервисах и эндпоинтах","h":3.0},{"t":"Аудит","h":1.0},{"t":"Корзина","h":2.0},{"t":"Конфликты 409","h":1.0},{"t":"Матрица изоляции","h":1.0},{"t":"Бюджеты","h":2.5},{"t":"Месячный отчёт","h":3.0},{"t":"Нагрузка и индекс","h":1.0},{"t":"Структура эндпоинтов и OpenAPI","h":1.0},{"t":"README и pull request","h":0.5},{"t":"ETag и If-Match","h":2.0,"s":1},{"t":"PATCH","h":1.0,"s":1},{"t":"Атомарный upsert и LeftJoin","h":1.0,"s":1}]},{"n":13,"t":"Аутентификация и авторизация: Identity, JWT, роли, безопасность API","tasks":[{"t":"Контракт и каркас безопасности","h":1.0},{"t":"Identity и таблицы","h":1.5},{"t":"Регистрация","h":2.0},{"t":"Данные и внешние ключи","h":1.5},{"t":"Вход, JWT и API, закрытый по умолчанию","h":4.0},{"t":"Refresh-токены и выход","h":3.0},{"t":"Роли и админ-эндпоинт","h":1.5},{"t":"Лимиты и блокировка","h":1.0},{"t":"Лаборатория атак","h":2.0},{"t":"Тесты","h":2.0},{"t":"README и pull request","h":0.5},{"t":"Reuse detection","h":1.5,"s":1},{"t":"Ответ 429 по контракту","h":1.0,"s":1},{"t":"Перенос данных вместо стирания","h":1.5,"s":1},{"t":"Смена пароля","h":1.5,"s":1}]},{"n":14,"t":"Интеграционные тесты: настоящая БД, настоящий HTTP","tasks":[{"t":"Каркас","h":2.0},{"t":"Помощники и первый сценарий","h":1.5},{"t":"Матрица изоляции в коде","h":2.5},{"t":"Контракт ошибок","h":1.5},{"t":"Конкуренция","h":2.5},{"t":"Время и аудит","h":1.0},{"t":"Снимок OpenAPI","h":1.5},{"t":"Миграции","h":1.0},{"t":"Покрытие","h":1.0},{"t":"Ломаем код","h":1.0},{"t":"Закрытие проекта 2","h":2.0},{"t":"Respawn","h":1.0,"s":1},{"t":"Стабильность","h":1.0,"s":1}]},{"n":15,"t":"Docker: образ, compose и работа за прокси","tasks":[{"t":"Образ","h":2.0},{"t":"Режим миграций","h":1.0},{"t":"Compose","h":3.0},{"t":"Настоящий IP клиента","h":2.0},{"t":"Здоровье и перезапуск","h":1.5},{"t":"Логи без секретов","h":1.0},{"t":"Образ глазами безопасности","h":1.0},{"t":"README и pull request","h":1.0},{"t":"Сборка под другую архитектуру","h":1.0,"s":1},{"t":"Проверка здоровья в прокси","h":1.0,"s":1}]},{"n":16,"t":"CI/CD и деплой: GitHub Actions, GHCR, сервер с HTTPS","tasks":[{"t":"CI на pull request","h":2.0},{"t":"Защита ветки и шаблон PR","h":0.5},{"t":"Публикация образа","h":1.5},{"t":"Сервер","h":3.0},{"t":"Боевой compose и HTTPS","h":2.5},{"t":"Администратор в продакшене","h":1.0},{"t":"Деплой из конвейера","h":3.0},{"t":"Резервные копии","h":1.5},{"t":"Учебный откат","h":1.0},{"t":"README и бейдж","h":0.5},{"t":"Автоматический откат","h":1.5,"s":1},{"t":"Dependabot","h":0.5,"s":1}]},{"n":17,"t":"Фоновая работа, кэш и очереди: BackgroundService, Redis, RabbitMQ","tasks":[{"t":"Кэш отчёта","h":3.0},{"t":"Холодный ключ","h":1.0},{"t":"Фоновая чистка","h":3.0},{"t":"Блокировка одного исполнителя","h":1.5},{"t":"Outbox","h":3.5},{"t":"RabbitMQ: публикация и потребление","h":3.0},{"t":"Учения по отказам","h":1.5},{"t":"Боевая конфигурация","h":1.0},{"t":"README и pull request","h":0.5},{"t":"Отложенный повтор","h":2.0,"s":1},{"t":"Два экземпляра","h":1.5,"s":1}]},{"n":18,"t":"Надёжность и наблюдаемость: повторы, таймауты, трассировка","tasks":[{"t":"Стратегия выполнения","h":2.0},{"t":"Идемпотентность создания расхода","h":2.0},{"t":"Внешний вызов под защитой","h":2.5},{"t":"Единый формат ошибок","h":1.0},{"t":"Чистые логи","h":1.5},{"t":"OpenTelemetry","h":2.5},{"t":"Свои метрики","h":2.0},{"t":"Три поломки","h":2.0},{"t":"Боевая конфигурация и PR","h":1.0},{"t":"Трасса через очередь","h":2.0,"s":1},{"t":"Выключатель для Redis","h":1.5,"s":1}]},{"n":19,"t":"Проектирование: SOLID, паттерны, ошибки как значения","tasks":[{"t":"Аудит дизайна","h":2.0},{"t":"Разрезать большой класс","h":4.0},{"t":"Правила через Strategy","h":2.5},{"t":"Декоратор кэша","h":2.0},{"t":"Result для бизнес-исходов","h":2.5},{"t":"Дисциплина кода","h":1.5},{"t":"Три ADR","h":1.0},{"t":"PR и тег","h":0.5},{"t":"Specification для фильтров","h":2.0,"s":1},{"t":"Мутационное тестирование","h":2.0,"s":1}]},{"n":20,"t":"Архитектура: слои, границы, вертикальные срезы","tasks":[{"t":"Решение и схема","h":1.5},{"t":"Проект Domain","h":4.0},{"t":"Money","h":3.0},{"t":"Правила в сущностях","h":3.0},{"t":"Раскладка по фичам","h":3.0},{"t":"Архитектурные тесты","h":1.5},{"t":"Аудит зависимостей","h":1.5},{"t":"PR и тег","h":0.5},{"t":"Mapperly","h":1.5,"s":1},{"t":"Модуль уведомлений","h":3.0,"s":1}]},{"n":21,"t":"TeamBoard: требования, модель данных, изоляция, ходячий скелет","tasks":[{"t":"Репозиторий и каркас","h":3.0},{"t":"Задачи в GitHub","h":1.5},{"t":"Модель данных","h":3.0},{"t":"Контракт API","h":2.5},{"t":"Срез «аккаунты и пространства»","h":4.0},{"t":"Авторизация","h":3.0},{"t":"Деплой скелета","h":1.5},{"t":"Схема архитектуры","h":1.0,"s":1},{"t":"Нагрузочный тест скелета","h":1.5,"s":1}]},{"n":22,"t":"TeamBoard: ядро — доски, карточки, порядок, конфликты, лента","tasks":[{"t":"Приглашения","h":3.0},{"t":"Доски и колонки","h":2.5},{"t":"Карточки","h":3.0},{"t":"Перенос и порядок","h":3.5},{"t":"Конфликты версий","h":2.0},{"t":"Комментарии","h":1.5},{"t":"Лента активности","h":2.5},{"t":"События в Outbox","h":1.5},{"t":"PR и тег","h":0.5},{"t":"Доменные события","h":2.0,"s":1},{"t":"Мягкое удаление карточек","h":2.0,"s":1}]},{"n":23,"t":"TeamBoard: реальное время, файлы, поиск, письма","tasks":[{"t":"SignalR","h":4.0},{"t":"Backplane","h":1.5},{"t":"Отзыв доступа","h":1.5},{"t":"Вложения","h":4.5},{"t":"Поиск","h":3.0},{"t":"Письма","h":2.5},{"t":"Боевая конфигурация","h":1.0},{"t":"PR и тег","h":0.5},{"t":"Присутствие","h":2.0,"s":1},{"t":"Подсветка результатов","h":1.5,"s":1},{"t":"ETag для доски","h":1.5,"s":1}]},{"n":24,"t":"TeamBoard: качество, безопасность, демо, v1.0.0","tasks":[{"t":"Нагрузочный тест","h":3.0},{"t":"Узкое место","h":1.5},{"t":"Проверка по OWASP","h":4.0},{"t":"Исправления","h":3.0},{"t":"README и ADR","h":3.0},{"t":"Демо-данные","h":2.0},{"t":"Живой деплой","h":2.0},{"t":"Релиз","h":1.0},{"t":"Минимальный фронтенд","h":8.0,"s":1},{"t":"Сбои зависимостей","h":2.0,"s":1},{"t":"Автоматический аудит","h":1.5,"s":1}]},{"n":25,"t":"Рынок, резюме и профили","tasks":[{"t":"Резюме на двух языках","h":4.0},{"t":"GitHub","h":3.0},{"t":"Профили","h":2.5},{"t":"Рассказ о себе","h":1.5},{"t":"Истории о проектах","h":3.0},{"t":"Список целей","h":2.0},{"t":"Таблица откликов","h":1.0},{"t":"Страница-портфолио","h":4.0,"s":1},{"t":"Разбор резюме","h":1.0,"s":1}]},{"n":26,"t":"Отклики и тестовые задания","tasks":[{"t":"Серия откликов","h":6.0},{"t":"Три шаблона","h":2.0},{"t":"Холодное сообщение","h":1.5},{"t":"Тренировочное тестовое","h":5.0},{"t":"Профили","h":1.0},{"t":"Вклад в open source","h":4.0,"s":1},{"t":"Пост о проекте","h":2.0,"s":1}]},{"n":27,"t":"Собеседования","tasks":[{"t":"Пробное собеседование","h":3.0},{"t":"Двадцать ключевых вопросов","h":5.0},{"t":"Пять историй","h":3.0},{"t":"Живое кодирование","h":4.0},{"t":"Вопросы работодателю","h":1.0},{"t":"Английское собеседование","h":1.5},{"t":"Собеседование с другом","h":2.0,"s":1},{"t":"Разбор реального собеседования","h":1.0,"s":1}]},{"n":28,"t":"Итерации, предложения и что дальше","tasks":[{"t":"Разбор воронки","h":2.0},{"t":"Письмо с запросом обратной связи","h":1.0},{"t":"Таблица сравнения предложений","h":2.0},{"t":"Сценарий разговора о зарплате","h":1.5},{"t":"План на три месяца","h":2.5},{"t":"Ретроспектива курса","h":2.0},{"t":"Продолжение поиска","h":4.0},{"t":"Улучшение проекта","h":6.0,"s":1},{"t":"Выступление","h":3.0,"s":1}]}];
+var LAST=WEEKS.length-1;
+var FIX=[["g","Критерии «Готово, если» выполнены"],["q","Вопросы самопроверки разобраны"],["r","Результат отправлен на ревью"]];
+var CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+var state={tab:"week",week:null,pick:null,done:{},days:{},settings:{start:"",goal:3.5},ready:false,mode:"loading",readOnly:false,status:"",err:"",bk:""};
+var db=null;
+var queue=new Map();
+var timers={};
+
+function $(s){return document.querySelector(s)}
+function pad(n){return String(n).padStart(2,"0")}
+function ymd(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+function parseYmd(s){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||"");return m?new Date(+m[1],+m[2]-1,+m[3]):null}
+function fmt(n){return String(Math.round(n*10)/10).replace(".",",")}
+function plural(n,a,b,c){n=Math.abs(n)%100;var m=n%10;return n>10&&n<20?c:m>1&&m<5?b:m===1?a:c}
+function wid(n){return "w"+pad(n)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function startOfDay(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
+
+/* ---------- расчёты ---------- */
+function weekStats(w){
+  var d=state.done[wid(w.n)]||{},req=0,rd=0,op=0,od=0,ht=0,hd=0,hk=true;
+  w.tasks.forEach(function(t,i){
+    var on=!!d["t"+(i+1)];
+    if(t.s){op++;if(on)od++}
+    else{req++;if(on)rd++;if(t.h==null)hk=false;else{ht+=t.h;if(on)hd+=t.h}}
+  });
+  return {req:req,rd:rd,op:op,od:od,ht:ht,hd:hd,hk:hk,closed:req>0&&rd===req&&!!d.g&&!!d.q};
+}
+function overall(){
+  var req=0,rd=0,closed=0;
+  WEEKS.forEach(function(w){var s=weekStats(w);req+=s.req;rd+=s.rd;if(s.closed)closed++});
+  return {req:req,rd:rd,closed:closed,pct:req?Math.round(100*rd/req):0};
+}
+function currentWeek(){
+  for(var i=0;i<WEEKS.length;i++){var s=weekStats(WEEKS[i]);if(s.rd<s.req)return i}
+  return LAST;
+}
+function planWeek(){
+  var st=parseYmd(state.settings.start);if(!st)return null;
+  var d=Math.floor((startOfDay(new Date())-st)/86400000);
+  if(d<0)return -1-(-d);
+  if(d<5)return 0;
+  return Math.min(LAST,1+Math.floor((d-5)/7));
+}
+function streak(){
+  var d=new Date(),s=0;
+  if(!(state.days[ymd(d)]>0))d.setDate(d.getDate()-1);
+  while(state.days[ymd(d)]>0){s++;d.setDate(d.getDate()-1)}
+  return s;
+}
+function lastDays(n){
+  var out=[],d=new Date();
+  for(var i=n-1;i>=0;i--){var x=new Date(d.getFullYear(),d.getMonth(),d.getDate()-i);out.push({d:x,k:ymd(x),h:state.days[ymd(x)]||0})}
+  return out;
+}
+
+/* ---------- сохранение ---------- */
+function setStatus(s){state.status=s;var el=$("#status");if(el)el.textContent=s==="saving"?"Сохраняю…":s==="saved"?"Сохранено":s==="error"?"Не сохранено":""}
+function dirty(path){var q=queue.get(path);return !!timers[path]||!!(q&&(q.busy||q.next))}
+function persist(path,data){
+  if(!db){localSave();setStatus("saved");return}
+  var q=queue.get(path);if(!q){q={busy:false,next:null};queue.set(path,q)}
+  q.next=data;
+  if(!q.busy)pump(path,q);
+}
+async function pump(path,q){
+  q.busy=true;setStatus("saving");
+  while(q.next){
+    var d=q.next;q.next=null;
+    try{await db.doc(path).set(d);setStatus("saved")}
+    catch(e){
+      if(e&&e.code==="unavailable"){
+        await new Promise(function(r){setTimeout(r,600+Math.random()*600)});
+        try{await db.doc(path).set(d);setStatus("saved");continue}catch(e2){e=e2}
+      }
+      setStatus("error");state.err=(e&&e.code)||"error";
+      if(e&&(e.code==="invalid_argument"||e.code==="revoked")){state.readOnly=true}
+      renderBanner();
+    }
+  }
+  q.busy=false;
+}
+function localSave(){
+  try{localStorage.setItem("dn-tracker-v1",JSON.stringify({done:state.done,days:state.days,settings:state.settings}))}catch(e){}
+}
+function localLoad(){
+  try{
+    var o=JSON.parse(localStorage.getItem("dn-tracker-v1")||"null");
+    if(o){state.done=o.done||{};state.days=o.days||{};state.settings=Object.assign(state.settings,o.settings||{})}
+  }catch(e){}
+}
+function cleanDone(o){
+  var r={};
+  Object.keys(o||{}).forEach(function(k){if(/^(t\d{1,2}|g|q|r)$/.test(k)&&o[k])r[k]=1});
+  return r;
+}
+
+/* ---------- действия ---------- */
+function toggle(key){
+  if(!state.ready||state.readOnly)return;
+  var w=WEEKS[state.week],id=wid(w.n),cur=Object.assign({},state.done[id]||{});
+  if(cur[key])delete cur[key];else cur[key]=1;
+  state.done[id]=cur;render();
+  persist("weeks/"+id,{done:cur,updatedAt:new Date().toISOString()});
+}
+function adjustToday(delta){
+  if(!state.ready||state.readOnly)return;
+  var k=ymd(new Date()),old=state.days[k]||0;
+  var v=Math.max(0,Math.min(16,Math.round((old+delta)*2)/2));
+  if(v===old)return;
+  state.days[k]=v;render();
+  var path="days/"+k;
+  clearTimeout(timers[path]);
+  timers[path]=setTimeout(function(){delete timers[path];persist(path,{h:state.days[k]||0,updatedAt:new Date().toISOString()})},500);
+  setStatus("saving");
+}
+function saveSettings(){
+  if(state.readOnly)return;
+  persist("meta/settings",{start:state.settings.start||"",goal:state.settings.goal});
+}
+function setGoal(delta){
+  var g=Math.max(1,Math.min(8,Math.round((state.settings.goal+delta)*2)/2));
+  if(g===state.settings.goal)return;
+  state.settings.goal=g;render();saveSettings();
+}
+
+/* ---------- отрисовка ---------- */
+function bar(p,mini){
+  p=Math.max(0,Math.min(100,p));
+  return '<div class="bar'+(mini?' mini':'')+'" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+Math.round(p)+'"><i style="width:'+p+'%"></i></div>';
+}
+function topCard(){
+  var o=overall(),cur=currentWeek(),p=planWeek(),plan="";
+  if(p!==null){
+    if(p<0)plan="Старт через "+(-1-p+0)+" "+plural(-1-p,"день","дня","дней");
+    else{
+      var diff=cur-p;
+      plan="По календарю: неделя "+p+". "+(diff===0?"Идёшь строго по плану.":diff<0?"Отставание: "+(-diff)+" "+plural(-diff,"неделя","недели","недель")+".":"Опережение: "+diff+" "+plural(diff,"неделя","недели","недель")+".");
+    }
+  }
+  var wk=0;lastDays(7).forEach(function(x){wk+=x.h});
+  var s=streak();
+  return '<section class="card" aria-label="Общий прогресс">'
+    +'<div class="hero"><span class="big">'+o.pct+'</span><span class="pct">%</span></div>'
+    +'<div class="sub">основных заданий выполнено: '+o.rd+' из '+o.req+'</div>'
+    +bar(o.pct)
+    +'<div class="stats">'
+    +'<div class="stat"><b>'+s+'</b><span>'+plural(s,"день","дня","дней")+' подряд</span></div>'
+    +'<div class="stat"><b>'+fmt(wk)+' ч</b><span>за 7 дней</span></div>'
+    +'<div class="stat"><b>'+o.closed+'/'+WEEKS.length+'</b><span>недель закрыто</span></div>'
+    +'</div>'
+    +(plan?'<div class="plan">'+esc(plan)+'</div>':'')
+    +'</section>';
+}
+function todayCard(){
+  var h=state.days[ymd(new Date())]||0,g=state.settings.goal,dis=state.readOnly?" disabled":"";
+  return '<section class="card today" aria-label="Часы за сегодня">'
+    +'<div class="row"><div class="grow"><div class="kicker">Сегодня</div><div class="val">'+fmt(h)+' ч <span class="goal">из '+fmt(g)+' ч</span></div></div></div>'
+    +'<div style="margin-top:10px">'+bar(g?100*h/g:0,true)+'</div>'
+    +'<div class="btns"><button class="btn" data-act="h" data-d="-0.5"'+dis+' aria-label="Минус полчаса">−0,5</button>'
+    +'<button class="btn primary" data-act="h" data-d="0.5"'+dis+' aria-label="Плюс полчаса">+0,5</button>'
+    +'<button class="btn primary" data-act="h" data-d="1"'+dis+' aria-label="Плюс час">+1 ч</button></div>'
+    +'</section>';
+}
+function taskRow(key,title,hrs,isStar,on){
+  return '<button class="task" role="checkbox" aria-checked="'+(on?'true':'false')+'" data-act="toggle" data-k="'+key+'"'+(state.readOnly?' disabled':'')+'>'
+    +'<span class="box">'+CHECK+'</span>'
+    +'<span class="tt">'+(isStar?'<span class="star" aria-label="необязательное">★ </span>':'')+esc(title)+'</span>'
+    +(hrs!=null?'<span class="hrs">'+fmt(hrs)+' ч</span>':'')
+    +'</button>';
+}
+function weekView(){
+  var w=WEEKS[state.week],s=weekStats(w),d=state.done[wid(w.n)]||{},cur=currentWeek();
+  var h=topCard()+todayCard();
+  h+='<div class="weeknav"><button class="icon" data-act="prev" aria-label="Предыдущая неделя"'+(state.week===0?' disabled':'')+'>‹</button>'
+    +'<div class="wtitle"><div class="kicker">Неделя '+w.n+' из '+LAST+(w.n===cur?'<span class="tag">сейчас</span>':'')+'</div><h2>'+esc(w.t)+'</h2></div>'
+    +'<button class="icon" data-act="next" aria-label="Следующая неделя"'+(state.week===LAST?' disabled':'')+'>›</button></div>';
+  h+='<section class="card">';
+  h+='<div class="row" style="margin-bottom:8px"><div class="grow kicker">Основные: '+s.rd+' из '+s.req+(s.hk&&s.ht?' · '+fmt(s.hd)+' из '+fmt(s.ht)+' ч':'')+'</div></div>'+bar(s.req?100*s.rd/s.req:0,true);
+  h+='<div style="margin-top:8px">';
+  w.tasks.forEach(function(t,i){if(!t.s)h+=taskRow("t"+(i+1),t.t,t.h,false,!!d["t"+(i+1)])});
+  h+='</div>';
+  if(s.op){
+    h+='<div class="group">Необязательные (★) · '+s.od+' из '+s.op+'</div>';
+    w.tasks.forEach(function(t,i){if(t.s)h+=taskRow("t"+(i+1),t.t,t.h,true,!!d["t"+(i+1)])});
+  }
+  h+='<div class="group">Завершение недели</div>';
+  FIX.forEach(function(f){h+=taskRow(f[0],f[1],null,false,!!d[f[0]])});
+  if(s.closed)h+='<div class="closed">Неделя закрыта. Можно переходить к следующей.</div>';
+  h+='</section>';
+  return h;
+}
+function allView(){
+  var cur=currentWeek(),h='<div class="kicker" style="margin:4px 0 10px">Нажми на неделю, чтобы открыть задания</div>';
+  WEEKS.forEach(function(w){
+    var s=weekStats(w);
+    h+='<button class="wrow'+(w.n===cur?' cur':'')+'" data-act="open" data-n="'+w.n+'"><span class="num">'+w.n+'</span>'
+      +'<span class="wmain"><span class="wt">'+esc(w.t)+'</span>'+bar(s.req?100*s.rd/s.req:0,true)+'</span>'
+      +'<span class="wc">'+(s.closed?CHECK.replace('<svg','<svg aria-label="закрыта"'):s.rd+'/'+s.req)+'</span></button>';
+  });
+  return h;
+}
+function chartSvg(days){
+  var W=340,H=150,base=116,top=16,N=days.length,slot=W/N,bw=16,goal=state.settings.goal;
+  var max=Math.max(goal*1.3,1);days.forEach(function(x){if(x.h>max)max=x.h});
+  function y(v){return base-(v/max)*(base-top)}
+  var pick=state.pick==null?N-1:state.pick,tk=ymd(new Date());
+  var s='<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Часы учёбы за последние '+N+' дней">';
+  var gy=y(goal);
+  s+='<rect class="selbg" x="'+(slot*pick)+'" y="2" width="'+slot+'" height="'+(base+26)+'" rx="6"/>';
+  s+='<line class="gl" x1="0" x2="'+W+'" y1="'+gy+'" y2="'+gy+'"/>';
+  s+='<line class="bs" x1="0" x2="'+W+'" y1="'+base+'" y2="'+base+'"/>';
+  days.forEach(function(x,i){
+    var cx=slot*i+slot/2,bx=cx-bw/2;
+    if(x.h>0){
+      var yy=y(x.h),hh=base-yy;
+      if(hh>=5)s+='<path class="bar-m" d="M'+bx+','+base+' V'+(yy+4)+' Q'+bx+','+yy+' '+(bx+4)+','+yy+' H'+(bx+bw-4)+' Q'+(bx+bw)+','+yy+' '+(bx+bw)+','+(yy+4)+' V'+base+' Z"/>';
+      else s+='<rect class="bar-m" x="'+bx+'" y="'+(base-hh)+'" width="'+bw+'" height="'+hh+'"/>';
+    }
+    s+='<text class="tick'+(i===pick?' sel':'')+'" x="'+cx+'" y="'+(base+16)+'" text-anchor="middle">'+x.d.getDate()+'</text>';
+    s+='<rect class="hit" data-act="pick" data-i="'+i+'" x="'+(slot*i)+'" y="0" width="'+slot+'" height="'+(base+24)+'" tabindex="0" role="button" aria-label="'+esc(x.d.toLocaleDateString("ru-RU",{day:"numeric",month:"long"})+": "+fmt(x.h)+" ч")+'"/>';
+  });
+  return s+'</svg>';
+}
+function daysView(){
+  var days=lastDays(14),pick=state.pick==null?days.length-1:state.pick,p=days[pick];
+  var total=0,active=0;Object.keys(state.days).forEach(function(k){var v=state.days[k];if(v>0){total+=v;active++}});
+  var dis=state.readOnly?' disabled':'';
+  var h='<section class="card"><h2 style="margin-bottom:8px">Последние 14 дней</h2>'+chartSvg(days)
+    +'<div class="kicker" style="display:flex;align-items:center;gap:8px"><svg width="22" height="8" aria-hidden="true"><line x1="0" x2="22" y1="4" y2="4" stroke="var(--axis)" stroke-width="2"/></svg>цель на день: '+fmt(state.settings.goal)+' ч</div>'
+    +'<div class="readout">'+esc(p.d.toLocaleDateString("ru-RU",{weekday:"long",day:"numeric",month:"long"}))+': <b>'+fmt(p.h)+' ч</b></div>'
+    +'<details><summary>Показать таблицей</summary><table><thead><tr><th>День</th><th class="n">Часы</th></tr></thead><tbody>';
+  days.slice().reverse().forEach(function(x){h+='<tr><td>'+esc(x.d.toLocaleDateString("ru-RU",{weekday:"short",day:"numeric",month:"short"}))+'</td><td class="n">'+fmt(x.h)+'</td></tr>'});
+  h+='</tbody></table></details></section>';
+  h+='<section class="card"><h2>Итого</h2><div class="stats"><div class="stat"><b>'+fmt(total)+' ч</b><span>всего</span></div>'
+    +'<div class="stat"><b>'+active+'</b><span>'+plural(active,"день","дня","дней")+' с учёбой</span></div>'
+    +'<div class="stat"><b>'+(active?fmt(total/active):'0')+' ч</b><span>в такой день</span></div></div></section>';
+  h+='<section class="card"><h2>Настройки</h2>'
+    +'<div class="setrow"><label class="f" for="start">Дата старта курса (первый день недели 0)</label><input id="start" type="date" value="'+esc(state.settings.start||"")+'"'+dis+'></div>'
+    +'<div class="setrow"><label class="f">Цель на день</label><div class="stepper"><button class="icon" data-act="goal" data-d="-0.5"'+dis+' aria-label="Меньше">−</button><b>'+fmt(state.settings.goal)+' ч</b><button class="icon" data-act="goal" data-d="0.5"'+dis+' aria-label="Больше">+</button></div></div>'
+    +'<p class="kicker" style="margin:14px 0 0">Неделя 0 длится 5 дней, дальше каждая неделя по 7. Дата нужна только для сравнения с планом. '+(state.mode==="db"?'Прогресс может прочитать Claude: напиши в чате «посмотри мой прогресс».':'Прогресс хранится на этом устройстве. Раз в неделю делай резервную копию ниже.')+'</p></section>';
+  if(state.mode!=="db"){
+    h+='<section class="card"><h2>Резервная копия</h2><p class="kicker" style="margin:8px 0 12px">Нажми «Сделать копию», выдели текст и сохрани его в заметках или отправь себе. Чтобы восстановить, вставь текст в поле и нажми «Восстановить».</p>'
+      +'<textarea id="bk" rows="5" spellcheck="false" aria-label="Текст резервной копии">'+esc(state.bk)+'</textarea>'
+      +'<div class="btns2"><button class="btn" data-act="export">Сделать копию</button><button class="btn" data-act="import">Восстановить</button></div><div id="bkmsg" class="kicker" role="status" style="margin-top:8px"></div></section>';
+  }
+  return h;
+}
+function renderBanner(){
+  var b=$("#banner"),t="";
+  if(state.mode==="local")t="Прогресс сейчас хранится только в этом браузере. Открой страницу из аккаунта, чтобы он сохранялся и был виден на всех устройствах.";
+  else if(state.mode==="stuck")t="Не удаётся загрузить прогресс. Обнови страницу, записи пока отключены, чтобы ничего не затереть.";
+  else if(state.readOnly)t="Режим просмотра: изменения сохраняться не будут.";
+  else if(state.status==="error")t="Не удалось сохранить последнее изменение. Проверь соединение и повтори.";
+  b.innerHTML=t?'<div class="note" role="alert">'+esc(t)+'</div>':"";
+}
+function render(){
+  var y=window.scrollY,v=$("#view");
+  if(!state.ready)v.innerHTML='<div class="card empty">'+(state.mode==="stuck"?'Прогресс не загрузился.':'Загружаю прогресс…')+'</div>';
+  else v.innerHTML=state.tab==="week"?weekView():state.tab==="all"?allView():daysView();
+  document.querySelectorAll("nav.tabs button").forEach(function(b){if(b.dataset.tab===state.tab)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+  renderBanner();
+  window.scrollTo(0,y);
+}
+
+/* ---------- события ---------- */
+document.addEventListener("click",function(e){
+  var t=e.target.closest("[data-act],[data-tab]");if(!t)return;
+  if(t.dataset.tab){state.tab=t.dataset.tab;render();window.scrollTo(0,0);return}
+  var a=t.dataset.act;
+  if(a==="toggle")toggle(t.dataset.k);
+  else if(a==="prev"){if(state.week>0){state.week--;render()}}
+  else if(a==="next"){if(state.week<LAST){state.week++;render()}}
+  else if(a==="open"){state.week=+t.dataset.n;state.tab="week";render();window.scrollTo(0,0)}
+  else if(a==="h")adjustToday(parseFloat(t.dataset.d));
+  else if(a==="goal")setGoal(parseFloat(t.dataset.d));
+  else if(a==="pick"){state.pick=+t.dataset.i;render()}
+  else if(a==="export")doExport();
+  else if(a==="import")doImport();
+});
+document.addEventListener("input",function(e){if(e.target.id==="bk")state.bk=e.target.value});
+document.addEventListener("keydown",function(e){
+  if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches("rect[data-act=pick]")){e.preventDefault();state.pick=+e.target.dataset.i;render()}
+});
+document.addEventListener("change",function(e){
+  if(e.target.id==="start"){
+    var v=e.target.value;state.settings.start=parseYmd(v)?v:"";saveSettings();render();
+  }
+});
+
+/* ---------- резервная копия ---------- */
+function bkMsg(t){var m=$("#bkmsg");if(m)m.textContent=t}
+function doExport(){
+  state.bk=JSON.stringify({v:1,done:state.done,days:state.days,settings:state.settings});
+  var ta=$("#bk");if(!ta)return;
+  ta.value=state.bk;ta.focus();ta.select();
+  var ok=false;try{ok=document.execCommand("copy")}catch(e){}
+  bkMsg(ok?"Копия готова и скопирована. Вставь её в заметки.":"Копия готова. Выдели текст в поле и скопируй его.");
+}
+function doImport(){
+  var o;
+  try{o=JSON.parse(state.bk)}catch(e){bkMsg("Не получилось прочитать текст. Вставь его целиком, как он был.");return}
+  if(!o||o.v!==1||typeof o.done!=="object"||typeof o.days!=="object"){bkMsg("Это не похоже на копию трекера.");return}
+  var nd={},ny={};
+  Object.keys(o.done||{}).forEach(function(k){if(/^w\d{2}$/.test(k))nd[k]=cleanDone(o.done[k])});
+  Object.keys(o.days||{}).forEach(function(k){var v=o.days[k];if(/^\d{4}-\d{2}-\d{2}$/.test(k)&&typeof v==="number"&&isFinite(v))ny[k]=Math.max(0,Math.min(16,v))});
+  state.done=nd;state.days=ny;
+  var st=o.settings||{};
+  state.settings.start=parseYmd(st.start)?st.start:"";
+  state.settings.goal=(typeof st.goal==="number"&&st.goal>=1&&st.goal<=8)?st.goal:3.5;
+  localSave();state.bk="";render();bkMsg("Готово, прогресс восстановлен.");
+}
+
+/* ---------- запуск ---------- */
+function becomeReady(){
+  if(state.ready)return;
+  state.ready=true;
+  if(state.week==null)state.week=currentWeek();
+  render();
+}
+function mergeKeepDirty(prefix,fresh,old){
+  Object.keys(old).forEach(function(id){if(dirty(prefix+id))fresh[id]=old[id]});
+  return fresh;
+}
+function subscribe(){
+  var got={w:0,d:0,m:0};
+  function chk(){if(got.w&&got.d&&got.m)becomeReady()}
+  function onErr(e){state.err=(e&&e.code)||"error";if(!state.ready){state.mode="stuck";render()}else{state.readOnly=true;renderBanner()}}
+  db.collection("weeks").onSnapshot(function(s){
+    var m={};
+    s.docs.forEach(function(x){var o=x.data();if(o&&o.done&&typeof o.done==="object")m[x.id]=cleanDone(o.done)});
+    state.done=mergeKeepDirty("weeks/",m,state.done);
+    got.w=1;if(state.ready)render();else chk();
+  },onErr);
+  db.collection("days").onSnapshot(function(s){
+    var m={};
+    s.docs.forEach(function(x){var o=x.data();if(o&&typeof o.h==="number"&&isFinite(o.h)&&/^\d{4}-\d{2}-\d{2}$/.test(x.id))m[x.id]=Math.max(0,Math.min(16,o.h))});
+    state.days=mergeKeepDirty("days/",m,state.days);
+    got.d=1;if(state.ready)render();else chk();
+  },onErr);
+  db.doc("meta/settings").onSnapshot(function(s){
+    var o=s.exists?s.data():null;
+    if(o&&!dirty("meta/settings")){
+      state.settings.start=parseYmd(o.start)?o.start:"";
+      if(typeof o.goal==="number"&&o.goal>=1&&o.goal<=8)state.settings.goal=o.goal;
+    }
+    got.m=1;if(state.ready)render();else chk();
+  },onErr);
+  setTimeout(function(){if(!state.ready){state.mode="stuck";render()}},8000);
+}
+async function init(){
+  render();
+  try{db=window.claude&&window.claude.use?await window.claude.use("db"):null}catch(e){db=null}
+  if(!db){
+    localLoad();state.mode=window.__APP__?"app":"local";state.ready=true;state.week=currentWeek();render();return;
+  }
+  state.mode="db";
+  try{
+    var user=await window.claude.use("user");
+    if(user){var cw=await user.can("data.write");if(cw===false){state.readOnly=true}}
+  }catch(e){}
+  subscribe();
+}
+init();
+})();
+</script>
+
+</body></html>
